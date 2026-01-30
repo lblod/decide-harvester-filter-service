@@ -33,7 +33,7 @@ export const HIGH_LOAD_DATABASE_ENDPOINT =
 export const INGEST_GRAPH = process.env.INGEST_GRAPH || "http://mu.semte.ch/graphs/public";
 
 export const PUBLISHER_URI =
-  process.env.PUBLISHER_URI || "http://data.lblod.info/services/decide-consumer-service";
+  process.env.PUBLISHER_URI || "http://data.lblod.info/services/decide-harvester-filter-service";
 
 export const BATCH_SIZE = parseInt(process.env.DCR_BATCH_SIZE) || 100;
 export const SLEEP_BETWEEN_BATCHES = parseInt(process.env.SLEEP_BETWEEN_BATCHES) || 1000;
