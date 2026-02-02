@@ -6,6 +6,11 @@ export const prefixes = {
 };
 
 export const queryDefs = {
+  besluit: {
+    type: "besluit:Besluit",
+    bestuursorgaanPropertyPath:
+      "^prov:generated / dcterms:subject / ^besluit:behandelt / besluit:isGehoudenDoor",
+  },
   // agendapunt: {
   //   type: "besluit:Agendapunt",
   //   bestuursorgaanPropertyPath: "^besluit:behandelt / besluit:isGehoudenDoor",
@@ -14,11 +19,6 @@ export const queryDefs = {
   //   type: "besluit:BehandelingVanAgendapunt",
   //   bestuursorgaanPropertyPath: "dcterms:subject / ^besluit:behandelt / besluit:isGehoudenDoor",
   // },
-  besluit: {
-    type: "besluit:Besluit",
-    bestuursorgaanPropertyPath:
-      "^prov:generated / dcterms:subject / ^besluit:behandelt / besluit:isGehoudenDoor",
-  },
   // bestuursorgaan: {
   //   type: "besluit:Bestuursorgaan",
   //   bestuursorgaanPropertyPath: "",
