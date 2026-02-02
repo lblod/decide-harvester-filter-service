@@ -1,4 +1,5 @@
-export const TASK_FILTER = "http://lblod.data.gift/id/jobs/concept/TaskOperation/decide-filter";
+export const OPERATION_URI =
+  process.env.OPERATION_URI || "http://lblod.data.gift/id/jobs/concept/TaskOperation/decide-filter";
 
 export const STATUS_BUSY = "http://redpencil.data.gift/id/concept/JobStatus/busy";
 export const STATUS_SCHEDULED = "http://redpencil.data.gift/id/concept/JobStatus/scheduled";
