@@ -1,4 +1,4 @@
-# harvesting filter decide service
+# Decide harvester filter service
 
 This service takes the output graph of the consumer step and filters only
 the useful data. the output of this step will be a file, just for the example.
