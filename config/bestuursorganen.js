@@ -1,4 +1,4 @@
-export const bestuursorganen = [
+const parentBestuursorganenGent = [
   "http://data.lblod.info/id/bestuursorganen/6efc9b0c3ebb3371031d45e517d88f66eb115adf28e5e1827684522f56a8aa2c",
   "http://data.lblod.info/id/bestuursorganen/c126b20bc1a94de293b7fceaf998c82e9a7a1d56ba34cbf9992aa4bf01ae2b01",
   "http://data.lblod.info/id/bestuursorganen/c55fc5e892d9540e8d2463b4377e1f4b2caad04b280118f9fc408e5df61f5737",
@@ -6,6 +6,9 @@ export const bestuursorganen = [
   "http://data.lblod.info/id/bestuursorganen/325c479023eed57b44ecdc40bb1c1b1b42a213975ca01f5a127bee6e9a4e7986",
   "http://data.lblod.info/id/bestuursorganen/cc2aba212d4102c6fa9ee2d43f27a1cde04da144a21cb8b1683dc7bb1e0154d2",
   "http://data.lblod.info/id/bestuursorganen/d06e5e292522046e94ebd6560813604df8e467a7347efc46c8b066ab5bbd38b1",
+];
+
+const tijdspecialisatieBestuursorganenGent = [
   "http://data.lblod.info/id/bestuursorganen/807a46610dcbd3c0646ea9d13784d09ba0bb2f6de6cd7c9029e3dc9a15ad33a3",
   "http://data.lblod.info/id/bestuursorganen/c484767ea88b545af011c47b52ac540a0ffdab400cfe9d3f53c6685ec8733cc7",
   "http://data.lblod.info/id/bestuursorganen/0c0338929c4edb5e847f98481c1df2b22ffa858b44e49dec603d3d97cf6272c3",
@@ -19,4 +22,9 @@ export const bestuursorganen = [
   "http://data.lblod.info/id/bestuursorganen/c0cf2d8f3a45a50e65b34dab2059dbdab19d716e66f35f9a06e23b975d8d46e5",
   "http://data.lblod.info/id/bestuursorganen/20825ff7b875937c78d5520a1de2c29339ededf65c8a5c4fc9b257604769a3ed",
   "http://data.lblod.info/id/bestuursorganen/1e9960d4c38937637027f21226ad19ff443e7bd33b8f6cc1a9cd47cc34f6fc55",
+];
+
+export const bestuursorganen = [
+  ...parentBestuursorganenGent,
+  ...tijdspecialisatieBestuursorganenGent,
 ];
