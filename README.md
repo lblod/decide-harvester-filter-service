@@ -63,13 +63,15 @@ Add the delta rule:
 
 ## Configuration
 
-| Environment variable          | Description                                                                 | Default                                                              |
-| ----------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `HIGH_LOAD_DATABASE_ENDPOINT` | SPARQL endpoint used for reads/writes of data (i.e. non-task data).         | `http://database:8890/sparql`                                        |
-| `INPUT_GRAPH`                 | Graph to read from when filtering data.                                     | `http://mu.semte.ch/graphs/public`                                   |
-| `DCR_BATCH_SIZE`              | Batch size for the insert-where query.                                      | `100`                                                                |
-| `SLEEP_BETWEEN_BATCHES`       | Sleep time (ms) between batch inserts.                                      | `1000`                                                               |
-| `OPERATION_URI`               | Only tasks with `task:operation` set to this URI are handled.               | `http://lblod.data.gift/id/jobs/concept/TaskOperation/decide-filter` | 
+| Environment variable        | Description                                                                                                | Default                                                              |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `MU_SPARQL_ENDPOINT`        | SPARQL endpoint used for tasks and filter-related reads/writes.                                            | `http://database:8890/sparql`                                        |
+| `DIRECT_SPARQL_ENDPOINT `   | SPARQL endpoint that is not used by default.                                                               | `http://virtuoso:8890/sparql`                                        |
+| `BYPASS_MU_SPARQL_ENDPOINT` | If `true`, direct filter-related reads/writes to `DIRECT_SPARQL_ENDPOINT` instead of `MU_SPARQL_ENDPOINT`. | `false`                                                              |
+| `INPUT_GRAPH`               | Graph to read from when filtering data.                                                                    | `http://mu.semte.ch/graphs/public`                                   |
+| `DCR_BATCH_SIZE`            | Batch size for the insert-where query.                                                                     | `100`                                                                |
+| `SLEEP_BETWEEN_BATCHES`     | Sleep time (ms) between batch inserts.                                                                     | `1000`                                                               |
+| `OPERATION_URI`             | Only tasks with `task:operation` set to this URI are handled.                                              | `http://lblod.data.gift/id/jobs/concept/TaskOperation/decide-filter` | 
 
 
 ## Notes
