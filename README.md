@@ -1,26 +1,37 @@
-# harvesting filter decide service
+# Decide harvester filter service
 
-This service takes the output graph of the consumer step and filters only
-the useful data. the output of this step will be a file, just for the example.
+## About
+This service filters harvester tasks. It listens for `task:Task` deltas: when a task becomes `adms:status = scheduled`, the service loads the task and writes a filtered subset of data into a **temporary result graph**, which is linked to the task via `task:resultsContainer / task:hasGraph`. The output is deliberately minimal: for each matched subject the service writes a single triple `<subject-uri> a <rdf-type>` into the result graph.
+
+Filtering is driven by two config sources:
+- `config/query-definitions.js` defines which RDF types are targeted and how each type is linked to a bestuursorgaan using property paths (e.g. for besluiten).
+- `config/bestuursorganen.js` provides the whitelist of bestuursorgaan URIs that are allowed to match. Only subjects that resolve to one of these bestuursorganen via the configured property path are included in the output.
+
+## How it works
+- A delta notification marks a task as `scheduled`.
+- The service loads the task (and its optional input container graph).
+- For each configured type in `query-definitions.js`:
+  - It counts matching subjects in the ingest graph.
+  - It inserts matching subjects into a temporary result graph in batches.
+- The temporary result graph is recorded on the task.
+
+## Input graph behavior
+- **No input container graph**
+  - The service searches the **ingest graph** for all matching subjects of the configured types and bestuursorganen and writes them into the temporary result graph.
+- **With input container graph**
+  - The service still evaluates types and bestuursorganen in the **ingest graph**, but it **restricts subjects** to those that appear in the input container graph.
 
 ## Usage
 
 Add the following to your docker-compose file:
 
 ```yml
-harvester-consumer-service:
-  image: lblod/poc-decide-harvester-consumer-service
+harvester-filter-service:
+  image: lblod/decide-harvester-filter-service
   environment:
-            DCR_START_FROM_DELTA_TIMESTAMP: 2025-09-01T00:00:00
-            DCR_SYNC_BASE_URL: https://lokaalbeslist-harvester-1.s.redhost.be/
-            DCR_SYNC_FILES_PATH: /sync/besluiten/files
-            DCR_SYNC_DATASET_SUBJECT: http://data.lblod.info/datasets/delta-producer/dumps/lblod-harvester/BesluitenCacheGraphDump
-            TARGET_GRAPH: "http://mu.semte.ch/graphs/public"
-            HTTP_MAX_QUERY_SIZE_BYTES: 120000
-            DCR_BATCH_SIZE: 2000
-            HIGH_LOAD_DATABASE_ENDPOINT: http://triplestore:8890/sparql
-   links:
-    - database:database
+    INPUT_GRAPH: "http://mu.semte.ch/graphs/oslo-decisions"
+    OPERATION_URI: http://lblod.data.gift/id/jobs/concept/TaskOperation/oslo-eli/filter
+
 ```
 
 Add the delta rule:
@@ -39,7 +50,7 @@ Add the delta rule:
   },
   "callback": {
     "method": "POST",
-    "url": "http://harvester-consumer-service/delta"
+    "url": "http://harvester-filter-service/delta"
   },
   "options": {
     "resourceFormat": "v0.0.1",
@@ -49,3 +60,21 @@ Add the delta rule:
   }
 }
 ```
+
+## Configuration
+
+| Environment variable        | Description                                                                                                | Default                                                              |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `MU_SPARQL_ENDPOINT`        | SPARQL endpoint used for tasks and filter-related reads/writes.                                            | `http://database:8890/sparql`                                        |
+| `DIRECT_SPARQL_ENDPOINT `   | SPARQL endpoint that is not used by default.                                                               | `http://virtuoso:8890/sparql`                                        |
+| `BYPASS_MU_SPARQL_ENDPOINT` | If `true`, direct filter-related reads/writes to `DIRECT_SPARQL_ENDPOINT` instead of `MU_SPARQL_ENDPOINT`. | `false`                                                              |
+| `INPUT_GRAPH`               | Graph to read from when filtering data.                                                                    | `http://mu.semte.ch/graphs/public`                                   |
+| `DCR_BATCH_SIZE`            | Batch size for the insert-where query.                                                                     | `100`                                                                |
+| `SLEEP_BETWEEN_BATCHES`     | Sleep time (ms) between batch inserts.                                                                     | `1000`                                                               |
+| `OPERATION_URI`             | Only tasks with `task:operation` set to this URI are handled.                                              | `http://lblod.data.gift/id/jobs/concept/TaskOperation/decide-filter` | 
+
+
+## Notes
+- Result graphs are created per task and linked via `task:resultsContainer / task:hasGraph`.
+- If you need additional filters, add them in `config/query-definitions.js`.
+
