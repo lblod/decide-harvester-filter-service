@@ -1,3 +1,5 @@
+// TODO: Fetch URIs from triplestore instead of having them hard-coded
+
 // besluit:Bestuursorgaan -- besluit:bestuurt -> besluit:Bestuurseenheid
 // besluit:Bestuursorgaan -- generiek:isTijdspecialisatieVan -> besluit:Bestuursorgaan
 
