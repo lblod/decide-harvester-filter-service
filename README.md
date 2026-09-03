@@ -3,17 +3,20 @@
 ## About
 This service filters harvester tasks. It listens for `task:Task` deltas: when a task becomes `adms:status = scheduled`, the service loads the task and writes a filtered subset of data into a **temporary result graph**, which is linked to the task via `task:resultsContainer / task:hasGraph`. The output is deliberately minimal: for each matched subject the service writes a single triple `<subject-uri> a <rdf-type>` into the result graph.
 
+Besides `task:operation`, a task must also carry `ext:hasResource <bestuurseenheid-uri>`, identifying which bestuurseenheid (municipality) it concerns. A task missing this property is not picked up by this service, exactly like a `task:operation` mismatch.
+
 Filtering is driven by two config sources:
 - `config/query-definitions.js` defines which RDF types are targeted and how each type is linked to a bestuursorgaan using property paths (e.g. for besluiten).
-- `config/bestuursorganen.js` provides the whitelist of bestuursorgaan URIs that are allowed to match. Only subjects that resolve to one of these bestuursorganen via the configured property path are included in the output.
+- `config/bestuursorganen.js` maps each bestuurseenheid URI to the whitelist of bestuursorgaan URIs allowed to match for that bestuurseenheid. The whitelist used for a given task is selected via its `ext:hasResource` value. Only subjects that resolve to one of these bestuursorganen via the configured property path are included in the output. If a task's bestuurseenheid isn't configured in `config/bestuursorganen.js`, the task fails (recorded as an error on the task) instead of being silently skipped.
 
 ## How it works
 - A delta notification marks a task as `scheduled`.
 - The service loads the task (and its optional input container graph).
+- It resolves the bestuursorganen whitelist for the task's bestuurseenheid (`ext:hasResource`); if none is configured, the task fails.
 - For each configured type in `query-definitions.js`:
   - It counts matching subjects in the ingest graph.
   - It inserts matching subjects into a temporary result graph in batches.
-- The temporary result graph is recorded on the task.
+- The temporary result graph is recorded on the task, and the result container is tagged with the same `ext:hasResource` bestuurseenheid as the source task.
 
 ## Input graph behavior
 - **No input container graph**
@@ -75,6 +78,7 @@ Add the delta rule:
 
 
 ## Notes
-- Result graphs are created per task and linked via `task:resultsContainer / task:hasGraph`.
+- Result graphs are created per task and linked via `task:resultsContainer / task:hasGraph`. The result container also carries `ext:hasResource`, set to the same bestuurseenheid as the source task.
 - If you need additional filters, add them in `config/query-definitions.js`.
+- Onboarding a new bestuurseenheid is a code change in `config/bestuursorganen.js` (no environment variable involved).
 

@@ -1,6 +1,8 @@
 // Bestuurseenheid Gent: https://data.lblod.info/id/bestuurseenheden/353234a365664e581db5c2f7cc07add2534b47b8e1ab87c821fc6e6365e6bef5
 
 const BASE_URI = "data.lblod.info/id/bestuursorganen";
+const BESTUURSEENHEID_BASE_URI = "data.lblod.info/id/bestuurseenheden";
+const GENT_BESTUURSEENHEID_UUID = "353234a365664e581db5c2f7cc07add2534b47b8e1ab87c821fc6e6365e6bef5";
 
 // besluit:Bestuursorgaan -- besluit:bestuurt -> besluit:Bestuurseenheid
 const parentBestuursorganenGentUuids = [
@@ -30,13 +32,25 @@ const tijdspecialisatieBestuursorganenGentUuids = [
   "1e9960d4c38937637027f21226ad19ff443e7bd33b8f6cc1a9cd47cc34f6fc55", // Adjunct-financieel directeur Gent
 ];
 
-const buildUris = (uuids) =>
-  uuids.flatMap((uuid) => [`http://${BASE_URI}/${uuid}`, `https://${BASE_URI}/${uuid}`]);
+const buildUris = (uuids, base = BASE_URI) =>
+  uuids.flatMap((uuid) => [`http://${base}/${uuid}`, `https://${base}/${uuid}`]);
 
-const parentBestuursorganenGent = buildUris(parentBestuursorganenGentUuids);
-const tijdspecialisatieBestuursorganenGent = buildUris(tijdspecialisatieBestuursorganenGentUuids);
-
-export const bestuursorganen = [
-  ...parentBestuursorganenGent,
-  ...tijdspecialisatieBestuursorganenGent,
+const bestuursorganenGent = [
+  ...buildUris(parentBestuursorganenGentUuids),
+  ...buildUris(tijdspecialisatieBestuursorganenGentUuids),
 ];
+
+// Map of bestuurseenheid URI -> flat list of applicable bestuursorgaan URIs
+// (both http and https variants of the bestuurseenheid key map to the same list).
+// Add Wingene (and other bestuurseenheden) here once their bestuurseenheid URI
+// and bestuursorgaan UUIDs are known.
+const bestuursorganenByBestuurseenheid = Object.fromEntries(
+  buildUris([GENT_BESTUURSEENHEID_UUID], BESTUURSEENHEID_BASE_URI).map((uri) => [
+    uri,
+    bestuursorganenGent,
+  ]),
+);
+
+export function getBestuursorganen(bestuurseenheidUri) {
+  return bestuursorganenByBestuurseenheid[bestuurseenheidUri];
+}
