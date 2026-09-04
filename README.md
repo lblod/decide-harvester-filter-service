@@ -3,16 +3,16 @@
 ## About
 This service filters harvester tasks. It listens for `task:Task` deltas: when a task becomes `adms:status = scheduled`, the service loads the task and writes a filtered subset of data into a **temporary result graph**, which is linked to the task via `task:resultsContainer / task:hasGraph`. The output is deliberately minimal: for each matched subject the service writes a single triple `<subject-uri> a <rdf-type>` into the result graph.
 
-Besides `task:operation`, a task must also carry `ext:hasResource <bestuurseenheid-uri>`, identifying which bestuurseenheid (municipality) it concerns. A task missing this property is not picked up by this service, exactly like a `task:operation` mismatch.
+Besides `task:operation`, a task must have a `task:inputContainer` whose resource carries `ext:hasResource <bestuurseenheid-uri>`, identifying which bestuurseenheid (municipality) the task concerns. A task missing an input container, or whose input container lacks `ext:hasResource`, is not picked up by this service, exactly like a `task:operation` mismatch.
 
 Filtering is driven by two config sources:
 - `config/query-definitions.js` defines which RDF types are targeted and how each type is linked to a bestuursorgaan using property paths (e.g. for besluiten).
-- `config/bestuursorganen.js` maps each bestuurseenheid URI to the whitelist of bestuursorgaan URIs allowed to match for that bestuurseenheid. The whitelist used for a given task is selected via its `ext:hasResource` value. Only subjects that resolve to one of these bestuursorganen via the configured property path are included in the output. If a task's bestuurseenheid isn't configured in `config/bestuursorganen.js`, the task fails (recorded as an error on the task) instead of being silently skipped.
+- `config/bestuursorganen.js` maps each bestuurseenheid URI to the whitelist of bestuursorgaan URIs allowed to match for that bestuurseenheid. The whitelist used for a given task is selected via its input container's `ext:hasResource` value. Only subjects that resolve to one of these bestuursorganen via the configured property path are included in the output. If a task's bestuurseenheid isn't configured in `config/bestuursorganen.js`, the task fails (recorded as an error on the task) instead of being silently skipped.
 
 ## How it works
 - A delta notification marks a task as `scheduled`.
-- The service loads the task (and its optional input container graph).
-- It resolves the bestuursorganen whitelist for the task's bestuurseenheid (`ext:hasResource`); if none is configured, the task fails.
+- The service loads the task (and its input container, including its optional restriction graph).
+- It resolves the bestuursorganen whitelist for the task's bestuurseenheid (`ext:hasResource` on the input container); if none is configured, the task fails.
 - For each configured type in `query-definitions.js`:
   - It counts matching subjects in the ingest graph.
   - It inserts matching subjects into a temporary result graph in batches.
