@@ -3,21 +3,21 @@
 ## About
 This service filters harvester tasks. It listens for `task:Task` deltas: when a task becomes `adms:status = scheduled`, the service loads the task and writes a filtered subset of data into a **temporary result graph per bestuurseenheid**, each linked to the task via its own `task:resultsContainer / task:hasGraph`. The output is deliberately minimal: for each matched subject the service writes a single triple `<subject-uri> a <rdf-type>` into the result graph.
 
-Besides `task:operation`, a task must have one or more `task:inputContainer`s, each carrying its own `ext:hasResource <bestuurseenheid-uri>`, identifying a bestuurseenheid (municipality) the task concerns. A task with no input containers, or whose input containers lack `ext:hasResource`, is not picked up by this service, exactly like a `task:operation` mismatch.
+Besides `task:operation`, a task must have one or more `task:inputContainer`s, each carrying its own `task:hasResource <bestuurseenheid-uri>`, identifying a bestuurseenheid (municipality) the task concerns. A task with no input containers, or whose input containers lack `task:hasResource`, is not picked up by this service, exactly like a `task:operation` mismatch.
 
 Filtering is driven by two config sources:
 - `config/query-definitions.js` defines which RDF types are targeted and how each type is linked to a bestuursorgaan using property paths (e.g. for besluiten).
-- `config/bestuursorganen.js` maps each bestuurseenheid URI to the whitelist of bestuursorgaan URIs allowed to match for that bestuurseenheid. The whitelist used for a given input container is selected via its `ext:hasResource` value. Only subjects that resolve to one of these bestuursorganen via the configured property path are included in that bestuurseenheid's output. If any of a task's bestuurseenheden isn't configured in `config/bestuursorganen.js`, the whole task fails (recorded as an error on the task) instead of only that bestuurseenheid being skipped.
+- `config/bestuursorganen.js` maps each bestuurseenheid URI to the whitelist of bestuursorgaan URIs allowed to match for that bestuurseenheid. The whitelist used for a given input container is selected via its `task:hasResource` value. Only subjects that resolve to one of these bestuursorganen via the configured property path are included in that bestuurseenheid's output. If any of a task's bestuurseenheden isn't configured in `config/bestuursorganen.js`, the whole task fails (recorded as an error on the task) instead of only that bestuurseenheid being skipped.
 
 ## How it works
 - A delta notification marks a task as `scheduled`.
-- The service loads the task and all of its input containers, each with its own bestuurseenheid (`ext:hasResource`) and optional restriction graph (`task:hasGraph`).
+- The service loads the task and all of its input containers, each with its own bestuurseenheid (`task:hasResource`) and optional restriction graph (`task:hasGraph`).
 - For each input container, in turn:
   - It resolves the bestuursorganen whitelist for that bestuurseenheid; if none is configured, the whole task fails.
   - For each configured type in `query-definitions.js`:
     - It counts matching subjects in the ingest graph.
     - It inserts matching subjects into a fresh temporary result graph in batches.
-  - The result graph is recorded on the task via a new `task:resultsContainer`, tagged with that bestuurseenheid's `ext:hasResource`.
+  - The result graph is recorded on the task via a new `task:resultsContainer`, tagged with that bestuurseenheid's `task:hasResource`.
 - A task therefore ends up with one `task:resultsContainer` per input container/bestuurseenheid.
 
 ## Input graph behavior
@@ -81,7 +81,7 @@ Add the delta rule:
 
 
 ## Notes
-- A result graph is created per bestuurseenheid (input container) and linked via its own `task:resultsContainer / task:hasGraph`, so a task with multiple input containers ends up with multiple `task:resultsContainer`s. Each result container carries `ext:hasResource`, set to that bestuurseenheid.
+- A result graph is created per bestuurseenheid (input container) and linked via its own `task:resultsContainer / task:hasGraph`, so a task with multiple input containers ends up with multiple `task:resultsContainer`s. Each result container carries `task:hasResource`, set to that bestuurseenheid.
 - If you need additional filters, add them in `config/query-definitions.js`.
 - Onboarding a new bestuurseenheid is a code change in `config/bestuursorganen.js` (no environment variable involved).
 
